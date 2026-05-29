@@ -31,13 +31,33 @@ services:
       N8N_PORT: ${N8N_PORT}
       N8N_PROTOCOL: ${N8N_PROTOCOL}
       WEBHOOK_URL: ${WEBHOOK_URL}
+      N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL}
       GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
       N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE}
       N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
       N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE}
+      N8N_PROXY_HOPS: ${N8N_PROXY_HOPS}
+      N8N_OTEL_ENABLED: ${N8N_OTEL_ENABLED}
+      N8N_OTEL_EXPORTER_SERVICE_NAME: ${N8N_OTEL_EXPORTER_SERVICE_NAME}
+      N8N_OTEL_EXPORTER_OTLP_ENDPOINT: ${N8N_OTEL_EXPORTER_OTLP_ENDPOINT}
+      N8N_OTEL_EXPORTER_OTLP_HEADERS: ${N8N_OTEL_EXPORTER_OTLP_HEADERS}
+      N8N_OTEL_TRACES_SAMPLE_RATE: ${N8N_OTEL_TRACES_SAMPLE_RATE}
+      N8N_OTEL_STARTUP_CONNECTIVITY_TIMEOUT_MS: ${N8N_OTEL_STARTUP_CONNECTIVITY_TIMEOUT_MS}
+
     volumes:
       - ./n8n_data:/home/node/.n8n
     depends_on:
       postgres:
         condition: service_healthy
+
+  collector:
+      env_file: .env
+      image: ghcr.io/dynatrace/dynatrace-otel-collector/dynatrace-otel-collector:0.31.0
+      command: ["--config=/etc/otelcol/otel-collector-config.yaml"]
+      volumes:
+        - ./otel-collector-config.yaml:/etc/otelcol/otel-collector-config.yaml
+        - ./n8n_data:/n8nlogs:ro
+      depends_on:
+        - n8n
